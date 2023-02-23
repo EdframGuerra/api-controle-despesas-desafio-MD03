@@ -21,7 +21,8 @@ const cadastroUsuario = async (req, res) => {
 
         const usuarioCadastrado = await pool.query(`INSERT INTO usuarios (nome, email, senha)
         VALUES
-        ($1, $2, $3) returning*`, [nome, email, criptografiaDeSenha])
+        ($1, $2, $3) returning id, nome, email`, [nome, email, criptografiaDeSenha])
+
 
         return res.status(201).json(usuarioCadastrado.rows[0])
 
