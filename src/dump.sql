@@ -15,3 +15,13 @@ CREATE TABLE categorias(
   descrição text NOT null 
 );
 
+--criação da tabela transações:
+CREATE TABLE transacoes(
+  ID serial PRIMARY KEY,
+  descricao text NOT null,
+  valor int NOT null,
+  DATA date,
+  categoria_id integer REFERENCES categorias(ID),
+  usuario_id integer  REFERENCES usuarios(ID),
+  tipo text NOT NULL
+);
