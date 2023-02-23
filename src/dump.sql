@@ -12,7 +12,7 @@ CREATE TABLE usuarios(
 --criação da tabela categorias:
 CREATE TABLE categorias(
   ID serial PRIMARY KEY,
-  descrição text NOT null 
+  descricao text NOT null 
 );
 
 --criação da tabela transações:
@@ -25,3 +25,12 @@ CREATE TABLE transacoes(
   usuario_id integer  REFERENCES usuarios(ID),
   tipo text NOT NULL
 );
+
+--inserção de descrição da tabela categorias
+INSERT INTO categorias(descricao) VALUES
+('Alimentacao'), ('Assinaturas_Servicos'),
+('Casa'),('Mercado'), ('Cuidados_Pessoais'),
+('Educacao'), ('Familia'), ('Lazer'), ('Pets'),
+('Presentes'), ('Roupas'), ('Saude'), ('Transporte'),
+('Salario'), ('Vendas'), ('Outras_receitas'),
+('Outras_despesas');
