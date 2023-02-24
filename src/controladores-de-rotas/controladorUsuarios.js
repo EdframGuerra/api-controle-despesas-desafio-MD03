@@ -93,11 +93,23 @@ const atualizacaoCadastro = async (req, res) => {
 
 }
 
+const listarCategoias = async (req, res) => {
+
+    try {
+        const categorias = await pool.query(`SELECT * FROM categorias`)
+        return res.status(201).json(categorias.rows)
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: error.message })
+    }
+}
+
 // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
 module.exports = {
     cadastroUsuario,
     login,
     detalharUsuario,
-    atualizacaoCadastro
+    atualizacaoCadastro,
+    listarCategoias
 
 }
