@@ -104,12 +104,45 @@ const listarCategoias = async (req, res) => {
     }
 }
 
+const cadastrarTransacao = async (req, res) => {
+    const { tipo, descricao, valor, data, categoria_id } = req.body
+
+    if (!descricao || !valor || !data || !categoria_id || !tipo) {
+        return res.status(400).json({ mensagem: 'Favor preencher todos os campos' })
+    }
+
+    try {
+
+        if (tipo === "entrada" || tipo === "saida") {
+
+        const verificarCategoriaId = await pool.query(`SELECT * FROM categorias WHERE id = $1`, [categoria_id])
+
+        if (verificarCategoriaId.rowCount === 0) {
+            return res.status(404).json({ mensagem: 'A categoria informada é inexistente' })
+        }
+
+        const cadastrandoTransacao = await pool.query(`INSERT INTO transacoes (descricao, valor, data, categoria_id, tipo,usuario_id)
+        VALUES
+        ($1, $2, $3, $4, $5, $6)returning id, tipo, descricao, valor, data, usuario_id, categoria_id`, [descricao, valor, data, categoria_id, tipo, req.usuario.id,])
+
+        return res.status(201).json(cadastrandoTransacao.rows[0])
+
+    } else {
+        return res.status(404).json({ mensagem: 'O tipo de transação é invalido' })
+    }
+} catch (error) {
+    return res.status(500).json({ mensagem: error.message })
+}
+}
+
+
 // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
 module.exports = {
     cadastroUsuario,
     login,
     detalharUsuario,
     atualizacaoCadastro,
-    listarCategoias
+    listarCategoias,
+    cadastrarTransacao
 
 }
