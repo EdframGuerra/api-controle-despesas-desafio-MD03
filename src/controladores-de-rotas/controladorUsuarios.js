@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 const senhaJwt = require('../senhaJwt/senhaJwt')
 const jwt = require('jsonwebtoken')
 
+
 //2º PASSO: CRIAR A FUNÇÃO QUE SERÁ EXECUTADA NA ROTA E APÓS,  IMPLEMENTAR NO CÓDIGO DE EXECUÇÃO EM ROTAS O NOME DA FUNÇÃO NO 6º PASSO DO ARQUIVO DE ROTAS.JS
 
 const cadastroUsuario = async (req, res) => {
@@ -16,6 +17,7 @@ const cadastroUsuario = async (req, res) => {
         if (emailVerificado.rowCount > 0) {
             return res.status(400).json({ mensagem: 'Já existe usuário cadastrado com o e-mail informado.' })
         }
+
         const salt = 10
         const criptografiaDeSenha = await bcrypt.hash(senha, salt)
 
@@ -61,14 +63,41 @@ const login = async (req, res) => {
 }
 
 const detalharUsuario = async (req, res) => {
-        return res.json(req.usuario)
+
+    return res.json(req.usuario)
 }
 
+const atualizacaoCadastro = async (req, res) => {
+    const { nome, email, senha } = req.body
+
+
+    //validação via intermediario de campos obrigatorios e se email existe?
+    try {
+        const emailVerificado = await pool.query(`SELECT * FROM usuarios WHERE email = $1`, [email])
+
+        const criptografiaDeSenha = await bcrypt.hash(senha, 10)
+
+        if (emailVerificado.rowCount === 0 || emailVerificado.rows[0].id === req.usuario.id && emailVerificado.rows[0].email === req.usuario.email) {
+
+            await pool.query(`UPDATE usuarios SET nome = $1, email = $2, senha =$3 WHERE id = $4 `, [nome, email, criptografiaDeSenha, req.usuario.id])
+
+        } else {
+
+            return res.status(401).json({ mensagem: 'O e-mail informado á esta sendo utilizado por outro usuario' })
+        }
+        return res.status(204).send()
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: error.message })
+    }
+
+}
 
 // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
 module.exports = {
     cadastroUsuario,
     login,
-    detalharUsuario
+    detalharUsuario,
+    atualizacaoCadastro
 
 }
