@@ -41,6 +41,9 @@ const login = async (req, res) => {
         if (usuario.rowCount == 0) {
             return res.status(400).json({ mensagem: 'Usuário e/ou senha inválido(s).' })
         }
+
+        const { senha: _, ...usuarioAutorizado } = usuario.rows[0]
+
         const senhaAutenticada = await bcrypt.compare(senha, usuario.rows[0].senha)
 
         if (!senhaAutenticada) {
@@ -49,7 +52,6 @@ const login = async (req, res) => {
 
         const token = jwt.sign({ id: usuario.rows[0].id }, senhaJwt, { expiresIn: '12h' })
 
-        const { senha: _, ...usuarioAutorizado } = usuario.rows[0]
         return res.json({ usuario: usuarioAutorizado, token })
 
 
@@ -58,11 +60,15 @@ const login = async (req, res) => {
     }
 }
 
+const detalharUsuario = async (req, res) => {
+        return res.json(req.usuario)
+}
 
 
 // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
 module.exports = {
     cadastroUsuario,
-    login
-  
+    login,
+    detalharUsuario
+
 }

@@ -1,5 +1,6 @@
 // importar a biblioteca jsonwebtoken:
 const jwt = require('jsonwebtoken')
+const pool = require('../conexao-banco-de-dados/conexao')
 
 // importa a senha jwt passando o caminho do arquivo:
 const senhaJwt = require('../senhajwt/senhaJwt')
@@ -32,10 +33,8 @@ const validarLogin = async (req, res, next) => {
 
         next()
     } catch (error) {
-        return res.status(401).json({ mensagem: 'Não autorizado' })
+        return res.status(401).json({ mensagem: 'Não autorizado!!!' })
     }
 }
 
-module.exports = {
-    validarLogin
-}
+module.exports = validarLogin
