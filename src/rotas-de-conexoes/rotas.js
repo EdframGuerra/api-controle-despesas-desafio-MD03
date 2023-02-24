@@ -1,6 +1,9 @@
 // 1º PASSO: IMPORTAR A BIBLIOTECA EXPRESS:
 const express = require('express')
-const { cadastroUsuario } = require('../controladores-de-rotas/controladorUsuarios')
+const { cadastroUsuario, login } = require('../controladores-de-rotas/controladorUsuarios')
+const validacaoCamposDoLogin = require('../intermediarios/validacaoCamposDologin')
+const validacaoCamposObrigatorios = require('../intermediarios/validacaoCamposObrigatorios')
+const { validarLogin } = require('../intermediarios/validarLogin')
 
 //importar os controladores
 
@@ -9,7 +12,11 @@ const rotas = express.Router();
 
 // 4º PASSO: CRIAR A ROTA, colocar após a vírgula o nome da função criada para rota:
 
-rotas.post('/usuario', cadastroUsuario)
+rotas.post('/usuario', validacaoCamposObrigatorios, cadastroUsuario)
+rotas.post('/login', validacaoCamposDoLogin, login)
+
+rotas.use(validarLogin)
+
 
 // 5º PASSO: EXPORTAR A ROTA:
 module.exports = rotas;
