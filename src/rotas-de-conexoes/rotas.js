@@ -1,11 +1,10 @@
 // 1º PASSO: IMPORTAR A BIBLIOTECA EXPRESS:
 const express = require('express')
-const { cadastroUsuario, login, detalharUsuario, atualizacaoCadastro, listarCategorias, cadastrarTransacao, listarTransacoesUsuario, detalharTransacoesUsuario } = require('../controladores-de-rotas/controladorUsuarios')
+const { cadastroUsuario, login, detalharUsuario, atualizacaoCadastro, listarCategorias, cadastrarTransacao, listarTransacoesUsuario, detalharTransacoesUsuario, atualizarTransacao } = require('../controladores-de-rotas/controladorUsuarios')
 const validacaoCamposDoLogin = require('../intermediarios/validacaoCamposDologin')
 const validacaoCamposObrigatorios = require('../intermediarios/validacaoCamposObrigatorios')
 const validarLogin = require('../intermediarios/validarLogin')
 
-//importar os controladores
 
 // 3º PASSO: CRIAR A CONSTANTE ROTAS PARA ESTANCIAR O EXPRESS:
 const rotas = express.Router();
@@ -23,6 +22,7 @@ rotas.get('/categoria', listarCategorias)
 rotas.post('/transacao', cadastrarTransacao)
 rotas.get('/transacao',listarTransacoesUsuario)
 rotas.get('/transacao/:id',detalharTransacoesUsuario)
+rotas.put('/transacao/:id',atualizarTransacao)
 
 
 // 5º PASSO: EXPORTAR A ROTA:

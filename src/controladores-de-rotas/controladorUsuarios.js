@@ -159,9 +159,9 @@ const detalharTransacoesUsuario = async (req, res) => {
     try {
 
         const selectId = await pool.query(`SELECT id, usuario_id from transacoes WHERE id = $1`, [id])
-        console.log(selectId.rowCount)
+
         if (selectId.rowCount == 0) {
-            return res.status(404).json({ mensagem: 'Transação não encontrado' })
+            return res.status(404).json({ mensagem: 'Transação não encontrada' })
         }
 
         if (selectId.rows[0].usuario_id !== req.usuario.id) {
@@ -178,6 +178,47 @@ const detalharTransacoesUsuario = async (req, res) => {
     }
 }
 
+const atualizarTransacao = async (req, res) => {
+    const { id } = req.params
+    const { descricao, valor, data, categoria_id, tipo } = req.body
+
+    //fazer uma função
+
+
+    //fazer uma função
+    if (!descricao || !valor || !data || !categoria_id || !tipo) {
+        return res.status(400).json({ mensagem: 'Todos os campos obrigatorios devem ser informados' })
+    }
+    if (!descricao.trim() || !data.trim() || !tipo.trim()) {
+        return res.status(400).json({ mensagem: 'Todos os campos obrigatorios devem ser preenchidos' })
+    }
+    //fazer uma função
+    if (!['entrada', 'saida'].includes(tipo)) {
+        return res.status(404).json({ mensagem: 'O tipo de transação invalida' })
+    }
+
+    try {
+        //fazer uma função se o ID existe e se pertence ao usuario
+        const selectId = await pool.query(`SELECT id, usuario_id from transacoes WHERE id = $1`, [id])
+
+        if (selectId.rowCount == 0) {
+            return res.status(404).json({ mensagem: 'Transação não encontrada' })
+        }
+
+        if (selectId.rows[0].usuario_id !== req.usuario.id) {
+            return res.status(401).json({ mensagem: 'Transação não autorizado' })
+        }
+
+
+        const x = await pool.query(`UPDATE transacoes SET descricao = $1, valor = $2, data = $3, categoria_id = $4, tipo = $5 WHERE usuario_id = $6 and id = $7`, [descricao, valor, data, categoria_id, tipo, req.usuario.id, id])
+
+
+        return res.status(204).send()
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: error.message })
+    }
+}
 
 // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
 module.exports = {
@@ -188,6 +229,7 @@ module.exports = {
     listarCategorias,
     cadastrarTransacao,
     listarTransacoesUsuario,
-    detalharTransacoesUsuario
+    detalharTransacoesUsuario,
+    atualizarTransacao
 
 }
