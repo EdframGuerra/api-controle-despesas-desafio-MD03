@@ -21,8 +21,8 @@ CREATE TABLE transacoes(
   descricao text NOT null,
   valor int NOT null,
   DATA date,
-  categoria_id integer REFERENCES categorias(ID),
-  usuario_id integer  REFERENCES usuarios(ID),
+  categoria_id int REFERENCES categorias(ID),
+  usuario_id int  REFERENCES usuarios(ID),
   tipo text NOT NULL
 );
 

@@ -242,22 +242,42 @@ const excluirTransacao = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ mensagem: error.message })
     }
-
-
 }
 
+const extratoTransacoes = async (req, res) => {
+    try {
+        const entradas = await pool.query(`(SELECT COALESCE(SUM(valor), 0)AS entrada FROM transacoes WHERE tipo = 'entrada' AND usuario_id = $1) `, [req.usuario.id])
 
-// 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
-module.exports = {
-    cadastroUsuario,
-    login,
-    detalharUsuario,
-    atualizacaoCadastro,
-    listarCategorias,
-    cadastrarTransacao,
-    listarTransacoesUsuario,
-    detalharTransacoesUsuario,
-    atualizarTransacao,
-    excluirTransacao
 
+        const saidas = await pool.query(`(SELECT COALESCE(SUM(valor), 0)AS saida FROM transacoes WHERE tipo = 'saida' AND usuario_id = $1) `, [req.usuario.id])
+
+
+        const extrato = {
+            entrada: entradas.rows[0].entrada,
+            saida: saidas.rows[0].saida
+        }
+
+
+        return res.status(201).json(extrato)
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: error.message })
+    }
 }
+const extra =
+
+
+    // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
+    module.exports = {
+        cadastroUsuario,
+        login,
+        detalharUsuario,
+        atualizacaoCadastro,
+        listarCategorias,
+        cadastrarTransacao,
+        listarTransacoesUsuario,
+        detalharTransacoesUsuario,
+        atualizarTransacao,
+        excluirTransacao,
+        extratoTransacoes
+    }
