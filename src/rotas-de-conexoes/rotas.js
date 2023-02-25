@@ -1,6 +1,6 @@
 // 1º PASSO: IMPORTAR A BIBLIOTECA EXPRESS:
 const express = require('express')
-const { cadastroUsuario, login, detalharUsuario, atualizacaoCadastro, listarCategorias, cadastrarTransacao, listarTransacoesUsuario } = require('../controladores-de-rotas/controladorUsuarios')
+const { cadastroUsuario, login, detalharUsuario, atualizacaoCadastro, listarCategorias, cadastrarTransacao, listarTransacoesUsuario, detalharTransacoesUsuario } = require('../controladores-de-rotas/controladorUsuarios')
 const validacaoCamposDoLogin = require('../intermediarios/validacaoCamposDologin')
 const validacaoCamposObrigatorios = require('../intermediarios/validacaoCamposObrigatorios')
 const validarLogin = require('../intermediarios/validarLogin')
@@ -22,6 +22,8 @@ rotas.put('/usuario', validacaoCamposObrigatorios, atualizacaoCadastro)
 rotas.get('/categoria', listarCategorias)
 rotas.post('/transacao', cadastrarTransacao)
 rotas.get('/transacao',listarTransacoesUsuario)
+rotas.get('/transacao/:id',detalharTransacoesUsuario)
+
 
 // 5º PASSO: EXPORTAR A ROTA:
 module.exports = rotas;

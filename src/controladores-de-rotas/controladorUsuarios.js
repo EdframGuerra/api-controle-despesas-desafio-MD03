@@ -154,6 +154,31 @@ const listarTransacoesUsuario = async (req, res) => {
     }
 }
 
+const detalharTransacoesUsuario = async (req, res) => {
+    const { id } = req.params
+    try {
+
+        const selectId = await pool.query(`SELECT id, usuario_id from transacoes WHERE id = $1`, [id])
+        console.log(selectId.rowCount)
+        if (selectId.rowCount == 0) {
+            return res.status(404).json({ mensagem: 'Transação não encontrado' })
+        }
+
+        if (selectId.rows[0].usuario_id !== req.usuario.id) {
+            return res.status(401).json({ mensagem: 'Transação não autorizado' })
+        }
+
+
+        const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.id = $1`, [id])
+
+        return res.status(201).json(transacoesUsuario.rows)
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: error.message })
+    }
+}
+
+
 // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
 module.exports = {
     cadastroUsuario,
@@ -162,6 +187,7 @@ module.exports = {
     atualizacaoCadastro,
     listarCategorias,
     cadastrarTransacao,
-    listarTransacoesUsuario
+    listarTransacoesUsuario,
+    detalharTransacoesUsuario
 
 }
