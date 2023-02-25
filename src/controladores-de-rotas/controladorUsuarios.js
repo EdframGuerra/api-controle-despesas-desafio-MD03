@@ -93,7 +93,7 @@ const atualizacaoCadastro = async (req, res) => {
 
 }
 
-const listarCategoias = async (req, res) => {
+const listarCategorias = async (req, res) => {
 
     try {
         const categorias = await pool.query(`SELECT * FROM categorias`)
@@ -111,10 +111,15 @@ const cadastrarTransacao = async (req, res) => {
         return res.status(400).json({ mensagem: 'Favor preencher todos os campos' })
     }
 
+    if (!descricao.trim() || !data.trim() || !tipo.trim()) {
+        return res.status(400).json({ mensagem: 'Os campos não pode ser vazio' })
+    }
+
+    if (!['entrada', 'saida'].includes(tipo)) {
+        return res.status(404).json({ mensagem: 'O tipo de transação invalida' })
+    }
+
     try {
-
-        if (tipo === "entrada" || tipo === "saida") {
-
         const verificarCategoriaId = await pool.query(`SELECT * FROM categorias WHERE id = $1`, [categoria_id])
 
         if (verificarCategoriaId.rowCount === 0) {
@@ -123,18 +128,31 @@ const cadastrarTransacao = async (req, res) => {
 
         const cadastrandoTransacao = await pool.query(`INSERT INTO transacoes (descricao, valor, data, categoria_id, tipo,usuario_id)
         VALUES
-        ($1, $2, $3, $4, $5, $6)returning id, tipo, descricao, valor, data, usuario_id, categoria_id`, [descricao, valor, data, categoria_id, tipo, req.usuario.id,])
+        ($1, $2, $3, $4, $5, $6) returning* `, [descricao, valor, data, categoria_id, tipo, req.usuario.id])
 
-        return res.status(201).json(cadastrandoTransacao.rows[0])
 
-    } else {
-        return res.status(404).json({ mensagem: 'O tipo de transação é invalido' })
+        const resposta = {
+            ...cadastrandoTransacao.rows[0],
+            categoria_nome: verificarCategoriaId.rows[0].descricao
+        }
+
+        return res.status(201).json(resposta)
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: error.message })
     }
-} catch (error) {
-    return res.status(500).json({ mensagem: error.message })
-}
 }
 
+const listarTransacoesUsuario = async (req, res) => {
+    try {
+        const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1`, [req.usuario.id])
+
+        return res.status(201).json(transacoesUsuario.rows)
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: error.message })
+    }
+}
 
 // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
 module.exports = {
@@ -142,7 +160,8 @@ module.exports = {
     login,
     detalharUsuario,
     atualizacaoCadastro,
-    listarCategoias,
-    cadastrarTransacao
+    listarCategorias,
+    cadastrarTransacao,
+    listarTransacoesUsuario
 
 }
