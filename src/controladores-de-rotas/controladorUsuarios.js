@@ -144,10 +144,32 @@ const cadastrarTransacao = async (req, res) => {
 }
 
 const listarTransacoesUsuario = async (req, res) => {
-    try {
-        const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1`, [req.usuario.id])
 
-        return res.status(201).json(transacoesUsuario.rows)
+    const { filtro } = req.query
+        ;
+    try {
+        let array = []
+
+        if (!filtro) {
+            const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1`, [req.usuario.id])
+
+            return res.status(201).json(transacoesUsuario.rows)
+        }
+
+        if (typeof (filtro) == "object") {
+            for (let item of filtro) {
+                const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1 and c.descricao = $2`, [req.usuario.id, item])
+
+                array.push(...transacoesUsuario.rows)
+            }
+        } else {
+            const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1 and c.descricao = $2`, [req.usuario.id, filtro])
+
+            array = transacoesUsuario.rows
+        }
+
+
+        return res.status(201).json(array)
 
     } catch (error) {
         return res.status(500).json({ mensagem: error.message })
@@ -246,10 +268,10 @@ const excluirTransacao = async (req, res) => {
 
 const extratoTransacoes = async (req, res) => {
     try {
-        const entradas = await pool.query(`(SELECT COALESCE(SUM(valor), 0)AS entrada FROM transacoes WHERE tipo = 'entrada' AND usuario_id = $1) `, [req.usuario.id])
+        const entradas = await pool.query(`SELECT COALESCE(SUM(valor), 0)AS entrada FROM transacoes WHERE tipo = 'entrada' AND usuario_id = $1`, [req.usuario.id])
 
 
-        const saidas = await pool.query(`(SELECT COALESCE(SUM(valor), 0)AS saida FROM transacoes WHERE tipo = 'saida' AND usuario_id = $1) `, [req.usuario.id])
+        const saidas = await pool.query(`SELECT COALESCE(SUM(valor), 0)AS saida FROM transacoes WHERE tipo = 'saida' AND usuario_id = $1 `, [req.usuario.id])
 
 
         const extrato = {
@@ -264,20 +286,20 @@ const extratoTransacoes = async (req, res) => {
         return res.status(500).json({ mensagem: error.message })
     }
 }
-const extra =
 
 
-    // 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
-    module.exports = {
-        cadastroUsuario,
-        login,
-        detalharUsuario,
-        atualizacaoCadastro,
-        listarCategorias,
-        cadastrarTransacao,
-        listarTransacoesUsuario,
-        detalharTransacoesUsuario,
-        atualizarTransacao,
-        excluirTransacao,
-        extratoTransacoes
-    }
+// 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
+module.exports = {
+    cadastroUsuario,
+    login,
+    detalharUsuario,
+    atualizacaoCadastro,
+    listarCategorias,
+    cadastrarTransacao,
+    listarTransacoesUsuario,
+    detalharTransacoesUsuario,
+    atualizarTransacao,
+    excluirTransacao,
+    extratoTransacoes,
+
+}
