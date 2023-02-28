@@ -1,3 +1,4 @@
+//validação campos obrigatórios do login
 const validacaoCamposDoLogin = (req, res, next) => {
     const { email, senha } = req.body
 

@@ -1,34 +1,39 @@
-// 1º PASSO: IMPORTAR A BIBLIOTECA EXPRESS:
+//IMPORTAR A BIBLIOTECA EXPRESS:
 const express = require('express')
-const { cadastroUsuario, login, detalharUsuario, atualizacaoCadastro, listarCategorias, cadastrarTransacao, listarTransacoesUsuario, detalharTransacoesUsuario, atualizarTransacao, excluirTransacao, extratoTransacoes } = require('../controladores-de-rotas/controladorUsuarios')
+
+//IMPORTADO CONTROLADORES E INTERMEDIARIOS DE ROTAS:
+const { listarCategorias } = require('../controladores-de-rotas/controladorCategorias')
+const { cadastrarTransacao, listarTransacoesUsuario, extratoTransacoes, detalharTransacoesUsuario, atualizarTransacao, excluirTransacao } = require('../controladores-de-rotas/controladorTransacoes')
+const { cadastroUsuario, detalharUsuario, atualizacaoCadastro } = require('../controladores-de-rotas/controladorUsuarios')
+const { login } = require('../controladores-de-rotas/login')
 const validacaoCamposDoLogin = require('../intermediarios/validacaoCamposDologin')
-const validacaoCamposObrigatorios = require('../intermediarios/validacaoCamposObrigatorios')
+const validacaoCamposObrigatorios = require('../intermediarios/validacaoCamposObrigatoriosCadUsuario')
+const { validacaoCamposObrigatoriosTransacoes } = require('../intermediarios/validacaoCamposTransacao')
+const { validacaoIdUsuarioTransacao } = require('../intermediarios/validacaoIdUserTransacao')
 const validarLogin = require('../intermediarios/validarLogin')
 
 
-// 3º PASSO: CRIAR A CONSTANTE ROTAS PARA ESTANCIAR O EXPRESS:
+//CRIAR ROTAS A CONSTANTE ROTAS PARA ESTANCIAR O EXPRESS:
 const rotas = express.Router();
 
-// 4º PASSO: CRIAR A ROTA, colocar após a vírgula o nome da função criada para rota:
-
+//CRIAR AS ROTAS
 rotas.post('/usuario', validacaoCamposObrigatorios, cadastroUsuario)
 rotas.post('/login', validacaoCamposDoLogin, login)
 
+// FUNÇÃO PARA VALIDAR USUARIO LOGADO:
 rotas.use(validarLogin)
 
+//ROTAS ACESSADAS ATRAVÉS DE LOGIN AUTENTICADO:
 rotas.get('/usuario', detalharUsuario)
 rotas.put('/usuario', validacaoCamposObrigatorios, atualizacaoCadastro)
 rotas.get('/categoria', listarCategorias)
-rotas.post('/transacao', cadastrarTransacao)
+rotas.post('/transacao', validacaoCamposObrigatoriosTransacoes, cadastrarTransacao)
 rotas.get('/transacao', listarTransacoesUsuario)
 rotas.get('/transacao/extrato/', extratoTransacoes)
-rotas.get('/transacao/:id', detalharTransacoesUsuario)
-rotas.put('/transacao/:id', atualizarTransacao)
-rotas.delete('/transacao/:id', excluirTransacao)
+rotas.get('/transacao/:id', validacaoIdUsuarioTransacao, detalharTransacoesUsuario)
+rotas.put('/transacao/:id', validacaoCamposObrigatoriosTransacoes, validacaoIdUsuarioTransacao, atualizarTransacao)
+rotas.delete('/transacao/:id', validacaoIdUsuarioTransacao, excluirTransacao)
 
 
-
-
-
-// 5º PASSO: EXPORTAR A ROTA:
+//EXPORTAR AS ROTAS:
 module.exports = rotas;

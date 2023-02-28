@@ -1,30 +1,35 @@
-// 1º PASSO: IMPORTAR O POOL NO ARQUIVO CONEXÃO.JS
+//REQUERENDO AS BIBLIOTECAS A SEREM USADAS NO PROJETO
 const pool = require('../conexao-banco-de-dados/conexao')
 const bcrypt = require('bcrypt')
-const senhaJwt = require('../senhaJwt/senhaJwt')
-const jwt = require('jsonwebtoken')
 
 
-//2º PASSO: CRIAR A FUNÇÃO QUE SERÁ EXECUTADA NA ROTA E APÓS,  IMPLEMENTAR NO CÓDIGO DE EXECUÇÃO EM ROTAS O NOME DA FUNÇÃO NO 6º PASSO DO ARQUIVO DE ROTAS.JS
 
+//CRIAR AS FUNÇÃO QUE SERÃO EXECUTADAS NAS ROTAS
+
+//Função cadastrar usuario
 const cadastroUsuario = async (req, res) => {
+
     const { nome, email, senha } = req.body;
 
-    // validação de campos obrigatórios via intermediario
-
+    // validação de campos obrigatórios via middleware
     try {
+
+        //verifica se e-mail existe no banco de dados
         const emailVerificado = await pool.query(`SELECT * FROM usuarios WHERE email = $1`, [email])
+
         if (emailVerificado.rowCount > 0) {
             return res.status(400).json({ mensagem: 'Já existe usuário cadastrado com o e-mail informado.' })
         }
 
-        const salt = 10
-        const criptografiaDeSenha = await bcrypt.hash(senha, salt)
+        //criptografando a senha com 10 caracteres
+        const criptografiaDeSenha = await bcrypt.hash(senha, 10)
 
+        //cadastrando o usuario no banco de dados
         const usuarioCadastrado = await pool.query(`INSERT INTO usuarios (nome, email, senha)
         VALUES
         ($1, $2, $3) returning *`, [nome, email, criptografiaDeSenha])
 
+        //devolvendo o objeto do usuario cadastrado sem a senha 
         const { senha: _, ...usuario } = usuarioCadastrado.rows[0]
 
         return res.status(201).json(usuario)
@@ -34,272 +39,51 @@ const cadastroUsuario = async (req, res) => {
     }
 }
 
-const login = async (req, res) => {
-    const { email, senha } = req.body
-    // validação de campos obrigatórios via intermediario
 
-    try {
-        const usuario = await pool.query(`SELECT * FROM usuarios WHERE email = $1`, [email])
-        if (usuario.rowCount == 0) {
-            return res.status(400).json({ mensagem: 'Usuário e/ou senha inválido(s).' })
-        }
-
-        const { senha: _, ...usuarioAutorizado } = usuario.rows[0]
-
-        const senhaAutenticada = await bcrypt.compare(senha, usuario.rows[0].senha)
-
-        if (!senhaAutenticada) {
-            return res.status(400).json({ mensagem: 'Usuário e/ou senha inválido(s).' })
-        }
-
-        const token = jwt.sign({ id: usuario.rows[0].id }, senhaJwt, { expiresIn: '12h' })
-
-        return res.json({ usuario: usuarioAutorizado, token })
-
-
-    } catch (error) {
-        return res.status(401).json({ mensagem: `Não autorizado` })
-    }
-}
-
+//função detalhar usuario
 const detalharUsuario = async (req, res) => {
 
     return res.json(req.usuario)
 }
 
+//função atualizar cadastro usuario
 const atualizacaoCadastro = async (req, res) => {
+
     const { nome, email, senha } = req.body
 
 
-    //validação via intermediario de campos obrigatorios e se email existe?
     try {
-        const emailVerificado = await pool.query(`SELECT * FROM usuarios WHERE email = $1`, [email])
 
+        //criptografa a senha com 10 caracteres
         const criptografiaDeSenha = await bcrypt.hash(senha, 10)
+
+        //verifica se e-mail  e ID já esta cadastrado no banco de dados e se pertence ao usuario
+        const emailVerificado = await pool.query(`SELECT * FROM usuarios WHERE email = $1`, [email])
 
         if (emailVerificado.rowCount === 0 || emailVerificado.rows[0].id === req.usuario.id && emailVerificado.rows[0].email === req.usuario.email) {
 
+            // atualiza o usuario
             await pool.query(`UPDATE usuarios SET nome = $1, email = $2, senha =$3 WHERE id = $4 `, [nome, email, criptografiaDeSenha, req.usuario.id])
 
         } else {
 
             return res.status(401).json({ mensagem: 'O e-mail informado á esta sendo utilizado por outro usuario' })
         }
-        return res.status(204).send()
-
-    } catch (error) {
-        return res.status(500).json({ mensagem: error.message })
-    }
-
-}
-
-const listarCategorias = async (req, res) => {
-
-    try {
-        const categorias = await pool.query(`SELECT * FROM categorias`)
-        return res.status(201).json(categorias.rows)
-
-    } catch (error) {
-        return res.status(500).json({ mensagem: error.message })
-    }
-}
-
-const cadastrarTransacao = async (req, res) => {
-    const { tipo, descricao, valor, data, categoria_id } = req.body
-
-    if (!descricao || !valor || !data || !categoria_id || !tipo) {
-        return res.status(400).json({ mensagem: 'Favor preencher todos os campos' })
-    }
-
-    if (!descricao.trim() || !data.trim() || !tipo.trim()) {
-        return res.status(400).json({ mensagem: 'Os campos não pode ser vazio' })
-    }
-
-    if (!['entrada', 'saida'].includes(tipo)) {
-        return res.status(404).json({ mensagem: 'O tipo de transação invalida' })
-    }
-
-    try {
-        const verificarCategoriaId = await pool.query(`SELECT * FROM categorias WHERE id = $1`, [categoria_id])
-
-        if (verificarCategoriaId.rowCount === 0) {
-            return res.status(404).json({ mensagem: 'A categoria informada é inexistente' })
-        }
-
-        const cadastrandoTransacao = await pool.query(`INSERT INTO transacoes (descricao, valor, data, categoria_id, tipo,usuario_id)
-        VALUES
-        ($1, $2, $3, $4, $5, $6) returning* `, [descricao, valor, data, categoria_id, tipo, req.usuario.id])
-
-
-        const resposta = {
-            ...cadastrandoTransacao.rows[0],
-            categoria_nome: verificarCategoriaId.rows[0].descricao
-        }
-
-        return res.status(201).json(resposta)
-
-    } catch (error) {
-        return res.status(500).json({ mensagem: error.message })
-    }
-}
-
-const listarTransacoesUsuario = async (req, res) => {
-
-    const { filtro } = req.query
-        ;
-    try {
-        let array = []
-
-        if (!filtro) {
-            const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1`, [req.usuario.id])
-
-            return res.status(201).json(transacoesUsuario.rows)
-        }
-
-        if (typeof (filtro) == "object") {
-            for (let item of filtro) {
-                const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1 and c.descricao = $2`, [req.usuario.id, item])
-
-                array.push(...transacoesUsuario.rows)
-            }
-        } else {
-            const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.usuario_id = $1 and c.descricao = $2`, [req.usuario.id, filtro])
-
-            array = transacoesUsuario.rows
-        }
-
-
-        return res.status(201).json(array)
-
-    } catch (error) {
-        return res.status(500).json({ mensagem: error.message })
-    }
-}
-
-const detalharTransacoesUsuario = async (req, res) => {
-    const { id } = req.params
-    try {
-
-        const selectId = await pool.query(`SELECT id, usuario_id from transacoes WHERE id = $1`, [id])
-
-        if (selectId.rowCount == 0) {
-            return res.status(404).json({ mensagem: 'Transação não encontrada' })
-        }
-
-        if (selectId.rows[0].usuario_id !== req.usuario.id) {
-            return res.status(401).json({ mensagem: 'Transação não autorizado' })
-        }
-
-
-        const transacoesUsuario = await pool.query(`SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id, t.categoria_id, c.descricao as categoria_nome from transacoes t INNER JOIN categorias c ON c.id = t.categoria_id WHERE t.id = $1`, [id])
-
-        return res.status(201).json(transacoesUsuario.rows)
-
-    } catch (error) {
-        return res.status(500).json({ mensagem: error.message })
-    }
-}
-
-const atualizarTransacao = async (req, res) => {
-    const { id } = req.params
-    const { descricao, valor, data, categoria_id, tipo } = req.body
-
-    //fazer uma função
-
-
-    //fazer uma função
-    if (!descricao || !valor || !data || !categoria_id || !tipo) {
-        return res.status(400).json({ mensagem: 'Todos os campos obrigatorios devem ser informados' })
-    }
-    if (!descricao.trim() || !data.trim() || !tipo.trim()) {
-        return res.status(400).json({ mensagem: 'Todos os campos obrigatorios devem ser preenchidos' })
-    }
-    //fazer uma função
-    if (!['entrada', 'saida'].includes(tipo)) {
-        return res.status(404).json({ mensagem: 'O tipo de transação invalida' })
-    }
-
-    try {
-        //fazer uma função se o ID existe e se pertence ao usuario
-        const selectId = await pool.query(`SELECT id, usuario_id from transacoes WHERE id = $1`, [id])
-
-        if (selectId.rowCount == 0) {
-            return res.status(404).json({ mensagem: 'Transação não encontrada' })
-        }
-
-        if (selectId.rows[0].usuario_id !== req.usuario.id) {
-            return res.status(401).json({ mensagem: 'Transação não autorizado' })
-        }
-
-
-        await pool.query(`UPDATE transacoes SET descricao = $1, valor = $2, data = $3, categoria_id = $4, tipo = $5 WHERE usuario_id = $6 and id = $7`, [descricao, valor, data, categoria_id, tipo, req.usuario.id, id])
-
 
         return res.status(204).send()
 
     } catch (error) {
         return res.status(500).json({ mensagem: error.message })
     }
-}
 
-const excluirTransacao = async (req, res) => {
-    const { id } = req.params
-
-    try {
-        //fazer uma função se o ID existe e se pertence ao usuario
-        const selectId = await pool.query(`SELECT id, usuario_id from transacoes WHERE id = $1`, [id])
-
-        if (selectId.rowCount == 0) {
-            return res.status(404).json({ mensagem: 'Transação não encontrada' })
-        }
-
-        if (selectId.rows[0].usuario_id !== req.usuario.id) {
-            return res.status(401).json({ mensagem: 'Transação não autorizada' })
-        }
-
-        await pool.query(`DELETE FROM transacoes WHERE id = $1 `, [id])
-
-        return res.status(204).send()
-
-    } catch (error) {
-        return res.status(500).json({ mensagem: error.message })
-    }
-}
-
-const extratoTransacoes = async (req, res) => {
-    try {
-        const entradas = await pool.query(`SELECT COALESCE(SUM(valor), 0)AS entrada FROM transacoes WHERE tipo = 'entrada' AND usuario_id = $1`, [req.usuario.id])
-
-
-        const saidas = await pool.query(`SELECT COALESCE(SUM(valor), 0)AS saida FROM transacoes WHERE tipo = 'saida' AND usuario_id = $1 `, [req.usuario.id])
-
-
-        const extrato = {
-            entrada: entradas.rows[0].entrada,
-            saida: saidas.rows[0].saida
-        }
-
-
-        return res.status(201).json(extrato)
-
-    } catch (error) {
-        return res.status(500).json({ mensagem: error.message })
-    }
 }
 
 
-// 3º PASSO: EXPORTAR A FUNÇÃO/CONTROLADOR
+
+
+//EXPORTANDO AS FUNÇÕES/CONTROLADOR
 module.exports = {
     cadastroUsuario,
-    login,
     detalharUsuario,
-    atualizacaoCadastro,
-    listarCategorias,
-    cadastrarTransacao,
-    listarTransacoesUsuario,
-    detalharTransacoesUsuario,
-    atualizarTransacao,
-    excluirTransacao,
-    extratoTransacoes,
-
+    atualizacaoCadastro
 }
