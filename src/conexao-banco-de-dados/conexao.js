@@ -1,12 +1,11 @@
 const { Pool } = require('pg');
 
-//2º PASSO: criar o metodo pool
 const pool = new Pool({
-    host: 'localhost',
-    port: 5432,
-    user: 'postgres',
-    password: 'ed546813', // verificar a senha
-    database: 'dindin'// preencher o nome do banco de dados
+    host: process.env.HOST,
+    port: process.env.PORT,
+    user: process.env.USER,
+    password: process.env.PASS, 
+    database: process.env.NAME,
 });
 
 module.exports = pool;

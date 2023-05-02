@@ -1,7 +1,5 @@
-//requerendo biblioteca para manipular o banco de dados
 const pool = require('../conexao-banco-de-dados/conexao')
 
-//Função listar categorias
 const listarCategorias = async (req, res) => {
 
     try {

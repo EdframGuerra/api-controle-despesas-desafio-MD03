@@ -1,7 +1,5 @@
-//validação campos obrigatórios do login
 const validacaoCamposDoLogin = (req, res, next) => {
     const { email, senha } = req.body
-
 
     if (!email) {
         return res.status(400).json({ mensagem: 'O campo e-mail deve existir e ser preenchidos' })

@@ -13,7 +13,6 @@ const validacaoCamposObrigatorios = (req, res, next) => {
         return res.status(400).json({ mensagem: 'O campo nome deve exitir e ser preenchidos' })
     }
 
-
     if (!nome.trim()) {
         return res.status(400).json({ mensagem: 'O campo nome deve ser preenchidos' })
     }
@@ -25,7 +24,6 @@ const validacaoCamposObrigatorios = (req, res, next) => {
     if (!senha.trim()) {
         return res.status(400).json({ mensagem: 'O campo senha deve ser preenchidos' })
     }
-
 
     next()
 }

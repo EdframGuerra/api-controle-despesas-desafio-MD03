@@ -1,4 +1,3 @@
-//REQUERENDO AS BIBLIOTECAS A SEREM UTILIZADAS NO PROJETO
 const pool = require('../conexao-banco-de-dados/conexao')
 
 const validacaoIdUsuarioTransacao = async (req, res, next) => {
