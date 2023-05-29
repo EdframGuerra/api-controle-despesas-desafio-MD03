@@ -1,8 +1,51 @@
+<h2 align="center"> 
+	🚀 App Controlde de despesas 🚀
+</h2>
+
+## 💻 Sobre o projeto
+ Desafio final de conclusão do Modulo-01 do Curso de Desenvolvimento de Software com foco em Back-end. O objetivo é criar uma API que simula um app de controle de despesas
+
+
+## 💡 Pré-requisitos
+ - O primeiro passo é instalar o [**Git**](https://git-scm.com) em seu computador caso você ainda não o tenha. 
+ - Os pacotes que iremos utilizar durante o desenvolvimento desse projeto serão gerenciados pelo **Node Package Manager** (NPM), então precisaremos instalá-lo. Vamos até o site oficial do [**Node.js**](https://nodejs.org/en/) para instalar sua versão LTS (versão mais estável). Quando instalamos o Node.js, o **NPM** também é instalado no computador como parte do mesmo pacote.
+ - Além disto é interessante ter um bom editor para trabalhar com o código como por exemplo o [**VSCode**](https://code.visualstudio.com/download).
+
+ ## 🚀 Como executar o projeto
+
+```bash
+# Abra seu terminal/cmd e clone este repositório
+$ git clone git@github.com:EdframGuerra/api-controle-despesas-desafio-MD03.git
+
+# Acesse a pasta do projeto
+$ cd desafio-backend-03-dindin-dbeifood
+
+# Baixe todas as dependências e pacotes da aplicação
+$ npm install
+
+# Execute a aplicação em modo de desenvolvimento pelo NPM
+$ npm run dev
+
+# A aplicação será aberta na porta:3000 - acesse em seu navegador
+http://localhost:3000
+
+# Configure as variaveis de ambiente
+PORT=
+
+JWT_HASH=
+
+DB_HOST=
+DB_NAME=
+DB_USER=
+DB_PASS=
+DB_PORT=
+DB_CLIENT=
+
+```
+
 ![](https://i.imgur.com/xG74tOh.png)
 
-# Desafio Módulo 3 - Backend
-
-Seu papel é construir uma RESTful API que permita:
+Construir uma RESTful API que permita:
 
 -   Cadastrar Usuário
 -   Fazer Login
@@ -17,27 +60,13 @@ Seu papel é construir uma RESTful API que permita:
 -   Obter extrato de transações
 -   [Extra] Filtrar transações por categoria
 
-**Importante: Lembre-se sempre que cada usuário só pode ver e manipular seus próprios dados e suas próprias transações. Não atender a este pré-requisito é uma falha de segurança gravíssima!**
+**Cada usuário só pode ver e manipular seus próprios dados e suas próprias transações!**
 
-**Importante 2: O diretório ".github" e seu conteúdo não podem ser alterados e muito menos excluídos**
-
-**Importante 3: Sempre que a validação de uma requisição falhar, responda com código de erro e mensagem adequada à situação, ok?**
-
-**Importante 4: O link de acesso a esta API se encontra no final deste README. Este link é somente para testes!**
-
-**Exemplo:**
-
-```javascript
-// Quando é informado um id de transação que não existe:
-// HTTP Status 404
-{
-    "mensagem": "Transação não encontrada!"
-}
-```
+**O link de acesso a esta API se encontra no final deste README. Este link é somente para testes!**
 
 ## **Banco de dados**
 
-Você precisa criar um Banco de Dados PostgreSQL chamado `dindin` contendo as seguintes tabelas e colunas:  
+Banco de Dados PostgreSQL chamado `dindin` contendo as seguintes tabelas e colunas:
 **ATENÇÃO! Os nomes das tabelas e das colunas a serem criados devem seguir exatamente os nomes listados abaixo.**
 
 -   usuarios
@@ -57,7 +86,7 @@ Você precisa criar um Banco de Dados PostgreSQL chamado `dindin` contendo as se
     -   usuario_id
     -   tipo
 
-**IMPORTANTE: Deverá ser criado no projeto o(s) arquivo(s) SQL que deverá ser o script que cria as tabelas corretamente.**
+**Arquivo SQL é o script que cria as tabelas corretamente.**
 
 As categorias a seguir precisam ser previamente cadastradas para que sejam listadas no endpoint de listagem das categorias.
 
@@ -81,13 +110,13 @@ As categorias a seguir precisam ser previamente cadastradas para que sejam lista
 -   Outras receitas
 -   Outras despesas
 
-**IMPORTANTE: Deverá ser criado no projeto o arquivo SQL que deverá ser o script de inserção das categorias acima na tabela.**
+**O arquivo SQL que deverá ser o script de inserção das categorias acima na tabela.**
 
 ## **Requisitos obrigatórios**
 
--   A API a ser criada deverá acessar o banco de dados a ser criado "dindin" para persistir e manipular os dados de usuários, categorias e transações utilizados pela aplicação.
+-   A API deverá acessar o banco de dados a ser criado "dindin" para persistir e manipular os dados de usuários, categorias e transações utilizados pela aplicação.
 -   O campo `id` das tabelas no banco de dados deve ser auto incremento, chave primária e não deve permitir edição uma vez criado.
--   Seu código deverá estar organizado, delimitando as responsabilidades de cada arquivo adequadamente. Ou seja, é esperado que ele tenha, no mínimo:
+-   Seu código organizado, delimitando as responsabilidades de cada arquivo adequadamente, é esperado que ele tenha, no mínimo:
     -   Um arquivo index.js
     -   Um arquivo conexao.js
     -   Um arquivo de rotas
@@ -762,7 +791,5 @@ Link do deploy da API somente para testes: [ link](https://desafio-backend-03-di
 **Este link é somente para testes (ou seja, será possível realizar requisições a esta API através deste link)**
 
 ---
-
-**LEMBRE-SE**: Feito é melhor que perfeito!!!
 
 ###### tags: `back-end` `módulo 3` `nodeJS` `PostgreSQL` `API REST` `desafio`
